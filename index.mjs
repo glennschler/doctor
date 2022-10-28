@@ -32,14 +32,16 @@ if (argv.client) {
 async function testClient () {
   console.log('Connecting to test server...')
   const socket = node.connect(b4a.from(argv.client, 'hex'))
+  let error = null
 
   socket.on('connect', function () {
     console.log('Connected to ' + socket.rawStream.remoteHost)
+    write(32)
+  }).on('error', function(err) {
+    error = err
   })
 
   let time = 0
-  write(32)
-
   socket.on('data', function (data) {
     if (!data.byteLength) return // ignore keep alives
 
@@ -54,7 +56,7 @@ async function testClient () {
   })
 
   socket.on('close', function () {
-    console.log('Connection closed')
+    console.log('Connection closed', error ? ' (' + error.message + ')' : '')
     node.destroy()
   })
 
